@@ -208,6 +208,12 @@ public class SettingsActivity extends Screen {
         b.addView(v, new FrameLayout.LayoutParams(-1, -1));
         navLabel[i] = v;
         b.setLook(f -> styleNav(i));
+        b.setOnClickListener(x -> {
+            if (editing != null) stopEditing(false);
+            if (section != i) navTo(i);
+            if (!rows.isEmpty()) focusRow(0);
+            else focusNav();
+        });
         placeTile(b, 96, NAV_TOP + i * (NAV_H + NAV_GAP), 424, NAV_H);
         return b;
     }
@@ -476,6 +482,7 @@ public class SettingsActivity extends Screen {
         line.addView(r.control, clp);
         r.tile.addView(line, new FrameLayout.LayoutParams(-1, -1));
         r.tile.setLook(f -> render(r, f));
+        r.tile.setOnClickListener(v -> onRowClick(r));
         placeTile(r.tile, 640, ROWS_TOP + i * (ROW_H + ROW_GAP), Tokens.LAYOUT_SETTINGS_ROW_WIDTH, ROW_H);
     }
 
@@ -499,9 +506,9 @@ public class SettingsActivity extends Screen {
         r.control.removeAllViews();
         boolean edit = r == editing;
         if (edit) {
-            // Editing: a lapis ring around the control on the gold row.
+            // Editing: a ring around the control; gold on a touch row that did not take focus.
             GradientDrawable ring = round(0, 34);
-            ring.setStroke(Ui.ipx(3), Tokens.LAPIS_900);
+            ring.setStroke(Ui.ipx(3), focused ? Tokens.LAPIS_900 : Tokens.GOLD_400);
             r.control.setBackground(ring);
             int pad = Ui.ipx(6);
             r.control.setPadding(pad, pad, pad, pad);
@@ -528,6 +535,7 @@ public class SettingsActivity extends Screen {
                 track.setBackground(round(focused ? Tokens.SEG_TRACK_FOCUSED : Tokens.LAPIS_900, 30));
                 String[] segs = r.segs();
                 for (int i = 0; i < segs.length; i++) {
+                    final int choice = i;
                     boolean chosen = i == (edit ? draft : r.selected());
                     TextView s = text(ui400, 22, chosen ? (focused ? Tokens.PLASTER_100 : Tokens.LAPIS_900) : (focused ? Tokens.LAPIS_900 : Tokens.MIST_400));
                     s.setText(segs[i]);
@@ -538,6 +546,7 @@ public class SettingsActivity extends Screen {
                         if (focused) bg.setStroke(Ui.ipx(3), Tokens.PLASTER_100);
                         s.setBackground(bg);
                     }
+                    s.setOnClickListener(v -> chooseSeg(r, choice));
                     LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-2, Ui.ipx(52));
                     if (i > 0) lp.setMarginStart(Ui.ipx(6));
                     track.addView(s, lp);
@@ -546,7 +555,9 @@ public class SettingsActivity extends Screen {
                 break;
             }
             case STEP: {
-                r.control.addView(stepButton("−"), new LinearLayout.LayoutParams(Ui.ipx(48), Ui.ipx(48)));
+                TextView minus = stepButton("−");
+                minus.setOnClickListener(v -> stepRow(r, -1));
+                r.control.addView(minus, new LinearLayout.LayoutParams(Ui.ipx(48), Ui.ipx(48)));
                 TextView v = text(ui400, 26, ink);
                 v.setText(r.valueOf(edit ? draft : r.amount()));
                 v.setGravity(Gravity.CENTER);
@@ -555,7 +566,9 @@ public class SettingsActivity extends Screen {
                 lp.setMarginStart(Ui.ipx(18));
                 lp.setMarginEnd(Ui.ipx(18));
                 r.control.addView(v, lp);
-                r.control.addView(stepButton("+"), new LinearLayout.LayoutParams(Ui.ipx(48), Ui.ipx(48)));
+                TextView plus = stepButton("+");
+                plus.setOnClickListener(v2 -> stepRow(r, 1));
+                r.control.addView(plus, new LinearLayout.LayoutParams(Ui.ipx(48), Ui.ipx(48)));
                 break;
             }
             default:
@@ -608,7 +621,7 @@ public class SettingsActivity extends Screen {
     private void startEditing(Row r) {
         editing = r;
         draft = r.kind == SEG ? r.selected() : r.amount();
-        render(r, true);
+        render(r, r.tile.isFocused());
         List<String> h = new ArrayList<>();
         h.add(t.hintChange());
         h.add(t.hintSave());
@@ -630,6 +643,56 @@ public class SettingsActivity extends Screen {
             refresh();
             focusRow(rowIndex);
         }
+    }
+
+    /** Touch: a row acts like OK on the focused row. */
+    private void onRowClick(Row r) {
+        if (chooser != null) return;
+        int i = rows.indexOf(r);
+        if (i < 0) return;
+        if (editing == r) {
+            stopEditing(true);
+            return;
+        }
+        if (editing != null) stopEditing(false);
+        focusRow(i);
+        switch (r.kind) {
+            case SEG:
+            case STEP:
+                startEditing(r);
+                break;
+            case TOGGLE:
+                r.set(!r.on());
+                if (r.saves()) showSaved();
+                refresh();
+                break;
+            default:
+                r.open();
+                break;
+        }
+    }
+
+    /** Touch: picking a segment saves it at once. */
+    private void chooseSeg(Row r, int choice) {
+        int i = rows.indexOf(r);
+        if (i < 0) return;
+        if (editing != null && editing != r) stopEditing(false);
+        focusRow(i);
+        editing = r;
+        draft = choice;
+        stopEditing(true);
+    }
+
+    /** Touch: the stepper's − and + save each tap, as if it were edited and confirmed. */
+    private void stepRow(Row r, int delta) {
+        int i = rows.indexOf(r);
+        if (i < 0) return;
+        if (editing != null && editing != r) stopEditing(false);
+        focusRow(i);
+        int from = editing == r ? draft : r.amount();
+        editing = r;
+        draft = Math.max(r.lowest(), Math.min(r.highest(), from + delta));
+        stopEditing(true);
     }
 
     /** ✓ Saved fades in at the end of the hint line, then out; a new save restarts it. */
@@ -802,6 +865,12 @@ public class SettingsActivity extends Screen {
         chooser = new FrameLayout(this);
         chooser.setBackgroundColor(Tokens.SCRIM_MENU);
         chooser.setClickable(true);
+        // Touch: a tap on the scrim is Back; the card itself swallows taps so only its items act.
+        chooser.setOnClickListener(v -> {
+            Runnable back = chooserBack;
+            closeChooser();
+            if (back != null) back.run();
+        });
 
         LinearLayout card = new LinearLayout(this);
         card.setOrientation(LinearLayout.VERTICAL);
@@ -810,6 +879,7 @@ public class SettingsActivity extends Screen {
         bg.setStroke(Ui.ipx(2), Tokens.GOLD_400_60);
         card.setBackground(bg);
         card.setClipChildren(true);
+        card.setClickable(true);
 
         TextView head = text(displayBold, Tokens.FONT_SIZE_DISPLAY_S, Tokens.GOLD_400);
         head.setText(title);
