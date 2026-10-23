@@ -25,6 +25,7 @@ final class Apps {
     private Apps() {}
 
     static final int FAVOURITE_SLOTS = 4;
+    private static final int RECENT_LIMIT = 12;
 
     private static final String[] DEFAULT_FAVOURITES = {
         "com.google.android.youtube.tv", "net.mbc.shahidTV", "dev.ctv.tv", "com.tcl.browser"};
@@ -116,17 +117,40 @@ final class Apps {
         return out;
     }
 
-    /** Always four for Home: the saved favourites that are installed, topped up from the rest if some went away. */
-    static List<String> slots(Context c, Text t) {
+    /** Saved favourites that are installed, in their chosen order. */
+    static List<String> starred(Context c) {
         List<String> installed = installed(c);
         List<String> out = new ArrayList<>();
         for (String p : favourites(c)) if (installed.contains(p) && out.size() < FAVOURITE_SLOTS) out.add(p);
-        for (String p : sorted(c, t)) if (out.size() < FAVOURITE_SLOTS && !out.contains(p)) out.add(p);
+        return out;
+    }
+
+    /** Home favourites first, then recently opened apps as a fallback; remaining positions stay empty. */
+    static List<String> slots(Context c) {
+        List<String> installed = installed(c);
+        List<String> out = starred(c);
+        for (String p : recent(c)) if (out.size() < FAVOURITE_SLOTS && installed.contains(p) && !out.contains(p)) out.add(p);
         return out;
     }
 
     static void saveFavourites(Context c, List<String> favs) {
         prefs(c).edit().putString("favourites", TextUtils.join(",", favs)).apply();
+    }
+
+    /** Apps launched through Afnon, newest first. This deliberately avoids requesting system Usage Access. */
+    static List<String> recent(Context c) {
+        String s = prefs(c).getString("recent_apps", "");
+        List<String> out = new ArrayList<>();
+        if (!s.isEmpty()) for (String p : s.split(",")) if (!p.isEmpty() && !out.contains(p)) out.add(p);
+        return out;
+    }
+
+    private static void rememberRecent(Context c, String pkg) {
+        List<String> out = recent(c);
+        out.remove(pkg);
+        out.add(0, pkg);
+        if (out.size() > RECENT_LIMIT) out = new ArrayList<>(out.subList(0, RECENT_LIMIT));
+        prefs(c).edit().putString("recent_apps", TextUtils.join(",", out)).apply();
     }
 
     // ---------------------------------------------------------------- one app
@@ -163,6 +187,7 @@ final class Apps {
         if (i == null) return;
         try {
             c.startActivity(i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED));
+            rememberRecent(c, pkg);
         } catch (ActivityNotFoundException | SecurityException ignored) {
             // The app went away or refuses outside launches; stay where we are.
         }

@@ -19,8 +19,8 @@ import java.util.List;
 
 /**
  * All apps (design/AllApps.dc.html): five columns, three rows in view, paging a row at a time. The info bar
- * names the focused app and its place in favourites. Hold OK arranges favourites: a favourite moves earlier or
- * later; any other app can take a favourite's place (Home always has four). The chip shows the next prayer and
+ * names the focused app and its place in favourites. Hold OK stars or unstars an app, or moves a favourite earlier
+ * or later. The chip shows the next prayer and
  * opens Prayer day; Back returns Home.
  */
 public class AllAppsActivity extends Screen {
@@ -54,7 +54,7 @@ public class AllAppsActivity extends Screen {
     void build() {
         newRoot();
         apps = Apps.sorted(this, t);
-        favs = Apps.slots(this, t);
+        favs = Apps.starred(this);
         tiles.clear();
 
         backButton = new FocusTile(this, 36);
@@ -324,13 +324,20 @@ public class AllAppsActivity extends Screen {
         List<String> labels = new ArrayList<>();
         int at = favs.indexOf(pkg);
         if (at >= 0) {
+            labels.add(t.removeStar());
+            menuActions.add(() -> removeFavourite(pkg));
             if (at > 0) { labels.add(t.moveEarlier()); menuActions.add(() -> swapFav(at, at - 1, pkg)); }
             if (at < favs.size() - 1) { labels.add(t.moveLater()); menuActions.add(() -> swapFav(at, at + 1, pkg)); }
         } else {
-            for (int j = 0; j < favs.size(); j++) {
-                final int slot = j;
-                labels.add(t.putInPlaceOf(Apps.name(this, t, favs.get(j))));
-                menuActions.add(() -> replaceFav(slot, pkg));
+            if (favs.size() < Apps.FAVOURITE_SLOTS) {
+                labels.add(t.addStar());
+                menuActions.add(() -> addFavourite(pkg));
+            } else {
+                for (int j = 0; j < favs.size(); j++) {
+                    final int slot = j;
+                    labels.add(t.starInsteadOf(Apps.name(this, t, favs.get(j))));
+                    menuActions.add(() -> replaceFav(slot, pkg));
+                }
             }
         }
         labels.add(t.cancel());
@@ -420,6 +427,22 @@ public class AllAppsActivity extends Screen {
     private void replaceFav(int slot, String pkg) {
         List<String> f = new ArrayList<>(favs);
         f.set(slot, pkg);
+        Apps.saveFavourites(this, f);
+        focusPkg = pkg;
+        build();
+    }
+
+    private void addFavourite(String pkg) {
+        List<String> f = new ArrayList<>(favs);
+        if (!f.contains(pkg) && f.size() < Apps.FAVOURITE_SLOTS) f.add(pkg);
+        Apps.saveFavourites(this, f);
+        focusPkg = pkg;
+        build();
+    }
+
+    private void removeFavourite(String pkg) {
+        List<String> f = new ArrayList<>(favs);
+        f.remove(pkg);
         Apps.saveFavourites(this, f);
         focusPkg = pkg;
         build();

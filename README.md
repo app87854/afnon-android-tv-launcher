@@ -49,7 +49,7 @@ Afnon started from [cleanyourtv](https://github.com/Gathin23/cleanyourtv):
 | ![Friday](docs/screenshots/friday.png) | ![Ramadan](docs/screenshots/ramadan.png) |
 | **Friday.** Jumu'ah replaces Dhuhr, with a Surat al-Kahf reminder. | **Ramadan.** Iftar and suhoor take over the countdown. |
 | ![All apps](docs/screenshots/all-apps.png) | ![Settings, radio section](docs/screenshots/settings-radio.png) |
-| **All apps.** Every launchable app. Hold OK to put one in favourites. | **Settings on the TV.** Prayer times, reminders and adhan, radio, display and language. |
+| **All apps.** Every launchable app. Hold OK to star or unstar it, or move a favourite. | **Settings on the TV.** Prayer times, reminders and adhan, radio, display and language. |
 
 ## Features
 
@@ -80,6 +80,9 @@ Afnon started from [cleanyourtv](https://github.com/Gathin23/cleanyourtv):
   Input and All apps buttons, to Afnon. The stock home's background service can then be disabled.
 - **Arabic and English.** RTL and LTR layouts. Language follows the TV or is set in Afnon. Digits
   are Arabic-Indic or Latin.
+- **Favourites you choose.** Hold OK in All apps to star or unstar an app, or move a starred app earlier or later.
+  The four Home places use stars first, then recent apps opened through Afnon; any remaining places stay empty.
+  Recent-app history stays on the TV and uses no Usage Access permission.
 - **Light on the TV.** Plain Java and Views, with no AndroidX, Kotlin or Compose. No blur, no
   video, no shadows. It runs smoothly on a 1.8 GB TV.
 
@@ -155,7 +158,7 @@ in Developer options, revoke the USB debugging authorisations, reboot, and check
 
 | I want to… | Do this |
 |---|---|
-| Change favourites | All apps → hold **OK** on an app → *Put in favourites instead of…* |
+| Change favourites | All apps → hold **OK** → *Star / Remove star / Move earlier / Move later* |
 | Change city, method, adhan voice, radio options | The remote's **Settings** button, or the gear on Home |
 | Point a remote button at another app | Edit the table at the top of `RemoteKeys.java`, then `bash tools/install.sh` |
 | Change colours or the star pattern | `Tokens.java` (the design tokens) and `Ui.starLattice` |
@@ -234,7 +237,7 @@ docs/screenshots/     the images above, all from the real TV
 **أفنون** شاشة رئيسية لتلفاز أندرويد، تبدأ من يوم الصلاة. الصلاة القادمة والعدّ التنازلي في قلب
 محراب، ومواقيت اليوم الستة في الأعلى، وتطبيقاتك المفضلة تحتها. ويأتي الأذان إلى التلفاز وحده في وقته.
 
-- **مواقيت بلا إنترنت**: تُحسب على التلفاز نفسه، مع ١٣٦ مدينة في ٤٣ دولة تُختار بالمنطقة ثم الدولة ثم المدينة، وعدة طرق حساب، والمذهب الشافعي أو الحنفي في
+- **مواقيت بلا إنترنت**: تُحسب على التلفاز نفسه، مع ١٣٧ مدينة في ٤٤ دولة تُختار بالمنطقة ثم الدولة ثم المدينة، وعدة طرق حساب، والمذهب الشافعي أو الحنفي في
   العصر، وتعديل التاريخ الهجري. التاريخ الهجري ووضع رمضان يعتمدان دائمًا على تقويم أم القرى، فإن اختلفت رؤية الهلال
   المحلية (كما في الولايات المتحدة) فاضبط التعديل.
 - **القبلة واتجاه الغرفة**: اتجاه القبلة من مدينتك، وإعداد لمرة واحدة لاتجاه التلفاز، فتقول لك الشاشة
@@ -246,6 +249,7 @@ docs/screenshots/     the images above, all from the real TV
   للأذان ثم تُستأنف، ويمكن إطفاء الشاشة أثناء الاستماع لتوفير الكهرباء. ومن الإعدادات ← الإذاعة ← المحطة:
   إذاعات القرآن الكريم من نابلس وشباب إف إم وقطر والأردن، أو قناة أحد القرّاء العشرة على مدار الساعة.
 - **أزرار الريموت**: أزرار التطبيقات والإعدادات والمدخلات تعمل مع أفنون.
+- **المفضلة باختيارك**: اضغط مطولًا على OK في «كل التطبيقات» لإضافة النجمة أو إزالتها، أو لتقديم التطبيق المميز وتأخيره. تملأ النجوم خانات الرئيسية الأربع أولًا، ثم تُستخدم التطبيقات التي شُغّلت من أفنون حديثًا لملء ما بقي؛ وما بقي فارغًا يظل فارغًا. سجل التطبيقات محفوظ على التلفاز ولا يحتاج إلى صلاحية Usage Access.
 - **العربية أولًا**: من اليمين إلى اليسار، مع الإنجليزية، والأرقام عربية أو لاتينية.
 - **بلا حسابات ولا إعلانات ولا تتبّع**. الإذاعة وحدها تستخدم الإنترنت.
 

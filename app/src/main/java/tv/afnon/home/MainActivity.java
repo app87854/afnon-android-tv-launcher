@@ -100,6 +100,12 @@ public class MainActivity extends Screen {
         runTest(intent);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (!builtApps.isEmpty() && !builtApps.equals(appsKey())) build();
+    }
+
     /**
      * Checking reminders on the TV without waiting for a prayer: `--es test reminder` shows Home's card now, with
      * the spoken reminder if it is on; `banner`, `call` and `announce` come from the remote buttons service 8 s
@@ -258,9 +264,10 @@ public class MainActivity extends Screen {
         fav.setText(t.fav());
         place(fav, Tokens.COURT_X, LABEL_ABOVE_FAV, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         float fw = (Tokens.COURT_W - 3 * 24) / 4f;
-        List<String> favs = Apps.slots(this, t);
+        List<String> favs = Apps.slots(this);
         for (int i = 0; i < 4; i++) {
-            nodes[F0 + i] = favouriteTile(favs.get(i), F0 + i, Tokens.COURT_X + i * (fw + 24), 520, fw);
+            nodes[F0 + i] = favouriteTile(i < favs.size() ? favs.get(i) : null,
+                F0 + i, Tokens.COURT_X + i * (fw + 24), 520, fw);
         }
 
         TextView more = caps(text(ui400, 22, Tokens.MIST_400));
@@ -373,9 +380,9 @@ public class MainActivity extends Screen {
         col.setPadding(Ui.ipx(24), Ui.ipx(22), Ui.ipx(24), Ui.ipx(22));
         ImageView icon = new ImageView(this);
         icon.setScaleType(ImageView.ScaleType.FIT_START);
-        Drawable d = Apps.icon(this, pkg);
+        Drawable d = pkg == null ? null : Apps.icon(this, pkg);
         if (d != null) icon.setImageDrawable(d);
-        String name = pkg == null ? "" : Apps.name(this, t, pkg);
+        String name = pkg == null ? t.pickFavourite() : Apps.name(this, t, pkg);
         TextView label = text(ui500, Apps.isLatin(name) ? 28 : 30, Tokens.PLASTER_100);
         label.setText(name);
         label.setSingleLine(true);
@@ -385,7 +392,11 @@ public class MainActivity extends Screen {
         col.addView(label, new LinearLayout.LayoutParams(-1, -2));
         b.addView(col, new FrameLayout.LayoutParams(-1, -1));
         b.setLook(f -> label.setTextColor(f ? Tokens.LAPIS_900 : Tokens.PLASTER_100));
-        b.setOnClickListener(v -> { if (pkg != null) Apps.launch(this, pkg); });
+        b.setContentDescription(name);
+        b.setOnClickListener(v -> {
+            if (pkg != null) Apps.launch(this, pkg);
+            else startActivity(new Intent(this, AllAppsActivity.class));
+        });
         nodeLabel[node] = name;
         placeTile(b, x, y, w, 150);
         return b;
@@ -893,6 +904,6 @@ public class MainActivity extends Screen {
     // ---------------------------------------------------------------- apps
 
     private String appsKey() {
-        return Apps.favourites(this) + "|" + Apps.installed(this).size();
+        return Apps.favourites(this) + "|" + Apps.recent(this) + "|" + Apps.installed(this).size();
     }
 }

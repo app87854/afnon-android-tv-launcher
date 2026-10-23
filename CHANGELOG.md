@@ -12,6 +12,8 @@ All notable changes to Afnon. Versions match `versionName` in `app/build.gradle`
 - Inputs button on Home, between Radio and Wi-Fi: opens the TV's source list (HDMI, AV). It uses the firmware's
   source menu (CVTE, Cultraview) or the Android TV inputs screen, and is left out where neither exists. The Source
   button now also opens Cultraview's `com.cultraview.setting.SourceActivity`.
+- All apps: hold OK to star or unstar an app; starred apps fill Home's four favourite places in the chosen order.
+  Unfilled places use recently opened apps launched through Afnon, then stay empty. No Usage Access permission is used.
 
 ### Changed
 - Glass look at rest for the Home pills and app cards (favourites, More, All apps): a fill fading down from the top, a

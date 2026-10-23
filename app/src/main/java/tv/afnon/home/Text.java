@@ -163,12 +163,15 @@ final class Text {
         String[] ord = {"الأول", "الثاني", "الثالث", "الرابع"};
         return ar ? "في المفضلة · " + ord[position - 1] : d("In favourites · position " + position);
     }
-    String notFav() { return ar ? "اضغط مطولًا على OK لوضعه في المفضلة" : "Hold OK to put it in favourites"; }
+    String notFav() { return ar ? "اضغط مطولًا على OK لتمييزه بنجمة" : "Hold OK to star it"; }
     String hintOpen() { return ar ? "OK  فتح" : "OK  Open"; }
-    String hintHold() { return ar ? "اضغط مطولًا  ترتيب المفضلة" : "Hold OK  Arrange favourites"; }
+    String hintHold() { return ar ? "اضغط مطولًا  تمييز أو ترتيب المفضلة" : "Hold OK  Star or arrange favourites"; }
+    String addStar() { return ar ? "تمييزه بنجمة وإضافته للمفضلة" : "Star and add to favourites"; }
+    String removeStar() { return ar ? "إزالة النجمة من المفضلة" : "Remove star from favourites"; }
+    String starInsteadOf(String app) { return ar ? "تمييزه بنجمة بدلًا من " + app : "Star instead of " + app; }
+    String pickFavourite() { return ar ? "اختر تطبيقًا من كل التطبيقات" : "Choose an app in All apps"; }
     String moveEarlier() { return ar ? "تقديمه في المفضلة" : "Move earlier in favourites"; }
     String moveLater() { return ar ? "تأخيره في المفضلة" : "Move later in favourites"; }
-    String putInPlaceOf(String app) { return ar ? "ضعه في المفضلة مكان " + app : "Put in favourites instead of " + app; }
     String cancel() { return ar ? "إلغاء" : "Cancel"; }
     String favourite() { return ar ? "مفضل" : "Favourite"; }
 
