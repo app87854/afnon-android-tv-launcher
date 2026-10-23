@@ -66,9 +66,9 @@ final class PrayerWatch {
         PowerManager pm = service.getSystemService(PowerManager.class);
         Date now = new Date();
         boolean asleep = pm != null && !pm.isInteractive();
-        // Asleep: nothing to show, unless the radio plays with the screen off (TCL Audio Only); then the call
-        // still comes, waking the screen.
-        if (asleep && !Radio.on()) return;
+        // The call must still be checked while the screen is asleep: openCall() wakes it before starting
+        // NowActivity. Only the visual reminder/banner below is suppressed while asleep. Previously this early
+        // return made a sleeping TV miss the adhan entirely unless the radio happened to be playing.
         PrayerDay day = new PrayerDay(service, now);
 
         int call = Reminders.dueCall(service, day, now);
