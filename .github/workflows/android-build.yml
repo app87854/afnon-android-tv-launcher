@@ -24,10 +24,13 @@ jobs:
 
       - name: Install Android SDK packages
         run: |
+          SDK_ROOT="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          SDKMANAGER="$(find "$SDK_ROOT/cmdline-tools" -type f -name sdkmanager | sort -V | tail -n 1)"
+          test -n "$SDKMANAGER"
           set +o pipefail
-          yes | sdkmanager --licenses
+          yes | "$SDKMANAGER" --licenses
           set -o pipefail
-          sdkmanager --install "platforms;android-34" "build-tools;34.0.0" "platform-tools"
+          "$SDKMANAGER" --install "platforms;android-34" "build-tools;34.0.0" "platform-tools"
 
       - name: Build debug APK
         run: ./gradlew --no-daemon :app:assembleDebug
