@@ -170,6 +170,7 @@ public class MainActivity extends Screen {
 
     @Override
     protected void onPause() {
+        closeInputsDropdown(false);
         Reminders.home = null;
         Radio.unlisten(onRadio);
         super.onPause();
@@ -386,7 +387,6 @@ public class MainActivity extends Screen {
 
         TextView title = text(displayBold, 40, Tokens.PLASTER_100);
         title.setText(t.inputs());
-        title.setTextDirection(View.TEXT_DIRECTION_LTR);
         title.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
         inputCard.addView(title);
 
@@ -398,18 +398,8 @@ public class MainActivity extends Screen {
         for (int i = 0; i < INPUT_NAMES.length; i++) {
             final int at = i;
             inputChoices[i] = inputChoice(INPUT_NAMES[i]);
-            inputChoices[i].setOnClickListener(v -> {
-                Intent direct = FirmwareKeys.cultraViewSource(this, INPUT_IDS[at]);
-                if (direct != null) {
-                    closeInputsDropdown();
-                    startSafely(direct.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-                } else if (fallback != null) {
-                    closeInputsDropdown();
-                    startSafely(new Intent(fallback).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-                } else {
-                    Toast.makeText(this, t.inputError(), Toast.LENGTH_SHORT).show();
-                }
-            });
+            inputChoices[i].setOnClickListener(v ->
+                openSource(FirmwareKeys.cultraViewSource(INPUT_IDS[at]), fallback));
             inputChoices[i].setOnFocusChangeListener((v, focused) -> {
                 if (focused) {
                     List<String> h = new ArrayList<>();
@@ -453,13 +443,35 @@ public class MainActivity extends Screen {
         return b;
     }
 
+    /** Starts CultraView's live TV on the chosen source, or opens the firmware's own source list. */
+    private void openSource(Intent direct, Intent fallback) {
+        closeInputsDropdown();
+        if (direct != null) {
+            try {
+                startActivity(direct.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                return;
+            } catch (ActivityNotFoundException | SecurityException ignored) {
+                // Not this firmware after all; fall back to its source list.
+            }
+        }
+        if (fallback != null) {
+            startSafely(new Intent(fallback).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+        } else {
+            Toast.makeText(this, t.inputError(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private void closeInputsDropdown() {
+        closeInputsDropdown(true);
+    }
+
+    private void closeInputsDropdown(boolean restoreFocus) {
         if (inputCard == null) return;
         root.removeView(inputCard);
         inputCard = null;
         for (int i = 0; i < inputChoices.length; i++) inputChoices[i] = null;
         for (View n : nodes) if (n != null) n.setFocusable(true);
-        nodes[INPUT].requestFocus();
+        if (restoreFocus && nodes[INPUT] != null) nodes[INPUT].requestFocus();
     }
 
     private View favouriteTile(String pkg, int node, float x, float y, float w) {
