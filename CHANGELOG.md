@@ -19,6 +19,10 @@ All notable changes to Afnon. Versions match `versionName` in `app/build.gradle`
 - Glass look at rest for the Home pills and app cards (favourites, More, All apps): a fill fading down from the top, a
   sheen and a lit edge (tokens `glass-*`), plain gradients with no blur or shadow. Focus is unchanged.
 
+### Fixed
+- Settings now responds to touch: rows, section tabs and list choices can be tapped, segments and steppers save at
+  once, and tapping the dimmed area closes an open list.
+
 ## [0.5] - 2026-10-22
 
 ### Added

@@ -37,6 +37,8 @@
         <package android:name="com.cvte.tv.globalui" />
         <!-- Cultraview's source list, which the Inputs button opens (FirmwareKeys.SOURCE_MENUS). -->
         <package android:name="com.cultraview.setting" />
+        <!-- Cultraview's live TV activity, which switches source directly by sourceId. -->
+        <package android:name="com.cultraview.livetv" />
         <!-- The Android TV inputs screen (FirmwareKeys.inputsScreen). -->
         <intent>
             <action android:name="com.android.tv.action.VIEW_INPUTS" />

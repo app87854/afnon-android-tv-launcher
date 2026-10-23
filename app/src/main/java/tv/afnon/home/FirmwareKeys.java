@@ -63,9 +63,8 @@ final class FirmwareKeys {
     }
 
     /** CultraView's direct source switcher; sourceId values are firmware-specific and explicit. */
-    static Intent cultraViewSource(Context c, int sourceId) {
-        Intent i = new Intent().setClassName("com.cultraview.livetv", "com.cultraview.livetv.MainActivity")
+    static Intent cultraViewSource(int sourceId) {
+        return new Intent().setClassName("com.cultraview.livetv", "com.cultraview.livetv.MainActivity")
             .putExtra("sourceId", sourceId);
-        return c.getPackageManager().resolveActivity(i, 0) == null ? null : i;
     }
 }
