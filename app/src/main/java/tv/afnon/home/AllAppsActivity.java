@@ -444,6 +444,7 @@ public class AllAppsActivity extends Screen {
         List<String> f = new ArrayList<>(favs);
         f.remove(pkg);
         Apps.saveFavourites(this, f);
+        Apps.removeRecent(this, pkg);
         focusPkg = pkg;
         build();
     }

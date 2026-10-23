@@ -153,6 +153,13 @@ final class Apps {
         prefs(c).edit().putString("recent_apps", TextUtils.join(",", out)).apply();
     }
 
+    /** Removes an app from the fallback Home row when the user explicitly removes its star. */
+    static void removeRecent(Context c, String pkg) {
+        List<String> out = recent(c);
+        if (!out.remove(pkg)) return;
+        prefs(c).edit().putString("recent_apps", TextUtils.join(",", out)).apply();
+    }
+
     // ---------------------------------------------------------------- one app
 
     static String name(Context c, Text t, String pkg) {
