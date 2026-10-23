@@ -4,6 +4,13 @@
 
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+    <!-- Optional hardware: the launcher still runs on TVs without a microphone, GPS, Wi-Fi,
+         or a landscape-only panel, and on Ethernet-only boxes. -->
+    <uses-feature android:name="android.hardware.microphone" android:required="false" />
+    <uses-feature android:name="android.hardware.location" android:required="false" />
+    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
+    <uses-feature android:name="android.hardware.wifi" android:required="false" />
+    <uses-feature android:name="android.hardware.screen.landscape" android:required="false" />
 
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <!-- Quran Radio: the stream, keeping the CPU and Wi-Fi awake under the screensaver, its level bars
