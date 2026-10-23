@@ -58,7 +58,7 @@ public class AllAppsActivity extends Screen {
         tiles.clear();
 
         backButton = new FocusTile(this, 36);
-        backButton.setRest(Tokens.LAPIS_800, Tokens.LINE_SOFT, 2);
+        backButton.setRest(Tokens.LAPIS_800, Tokens.GLASS_RIM, 2).setGlass();
         Icon back = new Icon(this, Icon.BACK, 2f);
         backButton.addView(back, new FrameLayout.LayoutParams(Ui.ipx(32), Ui.ipx(32), Gravity.CENTER));
         backButton.setLook(f -> back.setColor(f ? Tokens.LAPIS_900 : Tokens.PLASTER_100));
@@ -158,6 +158,7 @@ public class AllAppsActivity extends Screen {
 
     private FocusTile appTile(String pkg, int index) {
         FocusTile b = new FocusTile(this, Tokens.RADIUS_TILE);
+        b.setRest(Tokens.LAPIS_800, Tokens.GLASS_RIM, 2).setGlass();
         LinearLayout col = new LinearLayout(this);
         col.setOrientation(LinearLayout.VERTICAL);
         col.setPadding(Ui.ipx(24), Ui.ipx(22), Ui.ipx(24), Ui.ipx(22));

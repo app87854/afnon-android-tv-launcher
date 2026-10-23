@@ -4,6 +4,19 @@ All notable changes to Afnon. Versions match `versionName` in `app/build.gradle`
 
 ## [Unreleased]
 
+### Added
+- Ubari (أوباري, Libya): the Ministry of Awqaf's official table for every day of the year (`assets/times/ubari.txt`)
+  replaces the calculation for this city, so the method and Asr school rows do nothing there. A city with no file
+  in `assets/times/` is calculated as before; to add another Libyan city, add its file and a row in `Prefs.CITIES`.
+  Now 137 cities in 44 countries.
+- Inputs button on Home, between Radio and Wi-Fi: opens the TV's source list (HDMI, AV). It uses the firmware's
+  source menu (CVTE, Cultraview) or the Android TV inputs screen, and is left out where neither exists. The Source
+  button now also opens Cultraview's `com.cultraview.setting.SourceActivity`.
+
+### Changed
+- Glass look at rest for the Home pills and app cards (favourites, More, All apps): a fill fading down from the top, a
+  sheen and a lit edge (tokens `glass-*`), plain gradients with no blur or shadow. Focus is unchanged.
+
 ## [0.5] - 2026-10-22
 
 ### Added

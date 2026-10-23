@@ -52,6 +52,14 @@ final class Tokens {
     static final int SCRIM_PANEL = 0xB8060D1A;
     /** color.pattern-line: Star lattice lines (gold-400 at 7%) */
     static final int PATTERN_LINE = 0x12D8B46A;
+    /** color.glass-top: Glass tiles at rest: fill at the top edge (plaster-100 at 22%), fading to glass-bottom */
+    static final int GLASS_TOP = 0x38EFE7D6;
+    /** color.glass-bottom: Glass tiles at rest: fill at the bottom edge (plaster-100 at 7%) */
+    static final int GLASS_BOTTOM = 0x12EFE7D6;
+    /** color.glass-sheen: Glass tiles: highlight over the top 45%, fading to nothing; plain gradient, no blur */
+    static final int GLASS_SHEEN = 0x47EFE7D6;
+    /** color.glass-rim: Glass tiles at rest: the edge line (plaster-100 at 45%) */
+    static final int GLASS_RIM = 0x73EFE7D6;
     /** color.on-plaster.label: Approaching card: caps label on plaster */
     static final int ON_PLASTER_LABEL = 0xFF5A4A22;
     /** color.on-plaster.secondary: Approaching card: secondary text on plaster */

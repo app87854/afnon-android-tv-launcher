@@ -37,6 +37,8 @@ final class FirmwareKeys {
     private static final String[][] SOURCE_MENUS = {
         // CVTE: its hotkey service leaves the Source key to the app in front, and the stock launcher opened this.
         {"com.cvte.tv.globalui", "com.cvte.tv.globalui.InputSourceActivity"},
+        // Cultraview (MStar/MediaTek): the source list its own settings app opens for the Source button.
+        {"com.cultraview.setting", "com.cultraview.setting.SourceActivity"},
     };
 
     /** The TV's own source menu, or null if this firmware has none we know. */
@@ -46,5 +48,17 @@ final class FirmwareKeys {
             if (c.getPackageManager().resolveActivity(i, 0) != null) return i;
         }
         return null;
+    }
+
+    private static final String ACTION_VIEW_INPUTS = "com.android.tv.action.VIEW_INPUTS";
+
+    /** What the Inputs button opens: the firmware's source menu, else the Android TV inputs screen; null if neither. */
+    static Intent inputsScreen(Context c) {
+        Intent menu = sourceMenu(c);
+        if (menu != null) return menu;
+        Intent i = new Intent(ACTION_VIEW_INPUTS);
+        android.content.pm.ResolveInfo r = c.getPackageManager().resolveActivity(i, 0);
+        if (r == null || r.activityInfo == null) return null;
+        return i.setComponent(new android.content.ComponentName(r.activityInfo.packageName, r.activityInfo.name));
     }
 }

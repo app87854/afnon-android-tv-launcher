@@ -54,7 +54,7 @@ public class MainActivity extends Screen {
     // Section labels sit 10px above the design (478 / 722) so the focus ring and 1.06 scale never touch them.
     private static final int LABEL_ABOVE_FAV = 468, LABEL_ABOVE_MORE = 712;
 
-    private static final int ARCH = 0, WIFI = 1, SETTINGS = 2, F0 = 3, M0 = 7, ALL = 12, RADIO = 13, NODES = 14;
+    private static final int ARCH = 0, WIFI = 1, SETTINGS = 2, F0 = 3, M0 = 7, ALL = 12, RADIO = 13, INPUT = 14, NODES = 15;
 
     private final View[] nodes = new View[NODES];
     private final TextView[] cellTag = new TextView[6], cellName = new TextView[6], cellTime = new TextView[6];
@@ -215,6 +215,13 @@ public class MainActivity extends Screen {
         pills.setClipChildren(false);
         float reach = FocusTile.REACH;
         pills.addView(nodes[RADIO], new LinearLayout.LayoutParams(-2, Ui.ipx(72 + 2 * reach)));
+        Intent inputsScreen = FirmwareKeys.inputsScreen(this);
+        if (inputsScreen != null) {
+            nodes[INPUT] = inputsButton(inputsScreen);
+            LinearLayout.LayoutParams ilp = new LinearLayout.LayoutParams(Ui.ipx(72 + 2 * reach), Ui.ipx(72 + 2 * reach));
+            ilp.setMarginStart(Ui.ipx(20 - 2 * reach));
+            pills.addView(nodes[INPUT], ilp);
+        }
         LinearLayout.LayoutParams wlp = new LinearLayout.LayoutParams(-2, Ui.ipx(72 + 2 * reach));
         wlp.setMarginStart(Ui.ipx(20 - 2 * reach));
         pills.addView(nodes[WIFI], wlp);
@@ -272,6 +279,7 @@ public class MainActivity extends Screen {
 
         for (int i = 0; i < NODES; i++) {
             final int n = i;
+            if (nodes[i] == null) continue;   // the Inputs button is absent on a TV with no source screen
             nodes[i].setOnFocusChangeListener((v, has) -> { if (has) onNodeFocused(n); else if (n == ARCH) setArchFocused(false); });
         }
 
@@ -308,7 +316,7 @@ public class MainActivity extends Screen {
 
     private View wifiPill() {
         FocusTile b = new FocusTile(this, 36);
-        b.setRest(Tokens.LAPIS_800, Tokens.LINE_SOFT, 2);
+        b.setRest(Tokens.LAPIS_800, Tokens.GLASS_RIM, 2).setGlass();
         LinearLayout row = new LinearLayout(this);
         row.setGravity(Gravity.CENTER_VERTICAL);
         row.setPadding(Ui.ipx(28), 0, Ui.ipx(28), 0);
@@ -332,7 +340,7 @@ public class MainActivity extends Screen {
 
     private View settingsButton() {
         FocusTile b = new FocusTile(this, 36);
-        b.setRest(Tokens.LAPIS_800, Tokens.LINE_SOFT, 2);
+        b.setRest(Tokens.LAPIS_800, Tokens.GLASS_RIM, 2).setGlass();
         Icon gear = new Icon(this, Icon.GEAR, 1.8f);
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(Ui.ipx(34), Ui.ipx(34), Gravity.CENTER);
         b.addView(gear, lp);
@@ -344,8 +352,22 @@ public class MainActivity extends Screen {
         return b;
     }
 
+    /** Icon-only button next to Wi-Fi: opens the TV's source list (HDMI, AV). */
+    private View inputsButton(Intent screen) {
+        FocusTile b = new FocusTile(this, 36);
+        b.setRest(Tokens.LAPIS_800, Tokens.GLASS_RIM, 2).setGlass();
+        Icon icon = new Icon(this, Icon.INPUT, 1.8f);
+        b.addView(icon, new FrameLayout.LayoutParams(Ui.ipx(34), Ui.ipx(34), Gravity.CENTER));
+        b.setContentDescription(t.inputs());
+        b.setLook(f -> icon.setColor(f ? Tokens.LAPIS_900 : Tokens.PLASTER_100));
+        b.setOnClickListener(v -> startSafely(new Intent(screen).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)));
+        nodeLabel[INPUT] = t.inputs();
+        return b;
+    }
+
     private View favouriteTile(String pkg, int node, float x, float y, float w) {
         FocusTile b = new FocusTile(this, Tokens.RADIUS_TILE);
+        b.setRest(Tokens.LAPIS_800, Tokens.GLASS_RIM, 2).setGlass();
         LinearLayout col = new LinearLayout(this);
         col.setOrientation(LinearLayout.VERTICAL);
         col.setPadding(Ui.ipx(24), Ui.ipx(22), Ui.ipx(24), Ui.ipx(22));
@@ -371,6 +393,7 @@ public class MainActivity extends Screen {
 
     private View moreTile(String pkg, int node, float x, float y, float w) {
         FocusTile b = new FocusTile(this, Tokens.RADIUS_CELL);
+        b.setRest(Tokens.LAPIS_800, Tokens.GLASS_RIM, 2).setGlass();
         String name = pkg == null ? "" : Apps.name(this, t, pkg);
         TextView label = text(ui400, 22, Tokens.PLASTER_100);
         label.setText(name);
@@ -497,7 +520,7 @@ public class MainActivity extends Screen {
         if (n == ARCH) {
             h.add(t.hintOk(t.today()));
             h.add(t.hintApps());
-        } else if (n == RADIO) {
+        } else if (n == RADIO || n == INPUT) {
             h.add(t.hintOk(nodeLabel[n]));
         } else if (n >= F0 && n < M0) {
             h.add(t.hintOk(t.open(nodeLabel[n])));
@@ -521,7 +544,7 @@ public class MainActivity extends Screen {
     /** The header pill: "Radio" with a broadcast icon when off; level bars and "On air" (gold outline) when on. */
     private View radioPill() {
         FocusTile b = new FocusTile(this, 36);
-        b.setRest(Tokens.LAPIS_800, Tokens.LINE_SOFT, 2);
+        b.setRest(Tokens.LAPIS_800, Tokens.GLASS_RIM, 2).setGlass();
         LinearLayout row = new LinearLayout(this);
         row.setGravity(Gravity.CENTER_VERTICAL);
         row.setPadding(Ui.ipx(28), 0, Ui.ipx(28), 0);
@@ -561,7 +584,7 @@ public class MainActivity extends Screen {
         radioLabel.setTextColor(fg);
         radioIcon.setColor(fg);
         pillBars.setColor(focused ? Tokens.LAPIS_900 : Tokens.GOLD_400);
-        ((FocusTile) nodes[RADIO]).setRest(Tokens.LAPIS_800, on ? Tokens.GOLD_400_60 : Tokens.LINE_SOFT, 2);
+        ((FocusTile) nodes[RADIO]).setRest(Tokens.LAPIS_800, on ? Tokens.GOLD_400_60 : Tokens.GLASS_RIM, 2);
         if (radioCard != null) {
             cardStatus.setText(t.stationWhere(Radio.station(this)) + t.sep() + t.radioStatus(state));
             cardBars.setLive(playing);
@@ -840,8 +863,9 @@ public class MainActivity extends Screen {
         int to = -1;
         switch (from) {
             case ARCH: to = right ? F0 : up ? RADIO : -1; break;
-            case RADIO: to = left ? ARCH : right ? WIFI : down ? F0 + 1 : -1; break;
-            case WIFI: to = left ? RADIO : right ? SETTINGS : down ? F0 + 2 : -1; break;
+            case RADIO: to = left ? ARCH : right ? (nodes[INPUT] != null ? INPUT : WIFI) : down ? F0 + 1 : -1; break;
+            case INPUT: to = left ? RADIO : right ? WIFI : down ? F0 + 1 : -1; break;
+            case WIFI: to = left ? (nodes[INPUT] != null ? INPUT : RADIO) : right ? SETTINGS : down ? F0 + 2 : -1; break;
             case SETTINGS: to = left ? WIFI : down ? F0 + 3 : -1; break;
             default:
                 if (from >= F0 && from < M0) {

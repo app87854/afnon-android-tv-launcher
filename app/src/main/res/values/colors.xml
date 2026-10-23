@@ -24,6 +24,10 @@
     <color name="scrim_menu">#eb0c1b33</color>
     <color name="scrim_panel">#b8060d1a</color>
     <color name="pattern_line">#12d8b46a</color>
+    <color name="glass_top">#38efe7d6</color>
+    <color name="glass_bottom">#12efe7d6</color>
+    <color name="glass_sheen">#47efe7d6</color>
+    <color name="glass_rim">#73efe7d6</color>
     <color name="on_plaster_label">#ff5a4a22</color>
     <color name="on_plaster_secondary">#ff3d4a63</color>
     <color name="on_plaster_border">#990c1b33</color>

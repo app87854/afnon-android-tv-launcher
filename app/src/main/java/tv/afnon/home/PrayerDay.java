@@ -34,19 +34,15 @@ final class PrayerDay {
 
     /** With the saved location, method, Asr school and Hijri adjustment (Afnon Settings). */
     PrayerDay(Context c, Date now) {
-        this(now, Prefs.where(c), Prefs.method(c), Prefs.madhab(c), Prefs.hijriOffset(c));
+        this(now, Prefs.where(c), Prefs.method(c), Prefs.madhab(c), Prefs.hijriOffset(c),
+                OfficialTimes.of(c, Prefs.city(c).id));
     }
 
-    PrayerDay(Date now, Coordinates where, CalculationMethod method, Madhab madhab, int hijriOffset) {
+    /** {@code official}, when not null, replaces the calculation on every day its table has (method and Asr school then do nothing). */
+    PrayerDay(Date now, Coordinates where, CalculationMethod method, Madhab madhab, int hijriOffset, OfficialTimes official) {
         CalculationParameters params = method.getParameters();
         params.madhab = madhab;
-        PrayerTimes today = new PrayerTimes(where, DateComponents.from(now), params);
-        times[FAJR] = minute(today.fajr);
-        times[SUNRISE] = minute(today.sunrise);
-        times[DHUHR] = minute(today.dhuhr);
-        times[ASR] = minute(today.asr);
-        times[MAGHRIB] = minute(today.maghrib);
-        times[ISHA] = minute(today.isha);
+        System.arraycopy(dayTimes(now, where, params, official), 0, times, 0, 6);
 
         int latest = -1;
         for (int i = 0; i < 6; i++) if (!times[i].after(now)) latest = i;
@@ -59,7 +55,7 @@ final class PrayerDay {
         Calendar c = Calendar.getInstance();
         c.setTime(now);
         c.add(Calendar.DAY_OF_MONTH, 1);
-        Date tomorrowFajr = minute(new PrayerTimes(where, DateComponents.from(c.getTime()), params).fajr);
+        Date tomorrowFajr = dayTimes(c.getTime(), where, params, official)[FAJR];
         if (next == -1) {
             next = FAJR;
             times[FAJR] = tomorrowFajr;
@@ -81,6 +77,14 @@ final class PrayerDay {
         ramadan = hijriMonth == IslamicCalendar.RAMADAN;
 
         qibla = new Qibla(where).direction;
+    }
+
+    /** The six times of {@code day}: the official table's if it has the day, else calculated. */
+    private static Date[] dayTimes(Date day, Coordinates where, CalculationParameters params, OfficialTimes official) {
+        Date[] table = official == null ? null : official.on(day);
+        if (table != null) return table;
+        PrayerTimes p = new PrayerTimes(where, DateComponents.from(day), params);
+        return new Date[] {minute(p.fajr), minute(p.sunrise), minute(p.dhuhr), minute(p.asr), minute(p.maghrib), minute(p.isha)};
     }
 
     /**

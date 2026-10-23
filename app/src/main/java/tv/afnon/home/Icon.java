@@ -8,7 +8,7 @@ import android.view.View;
 
 /** Stroke icons on a 24px grid in the current colour, so they follow focus (README: Iconography). */
 final class Icon extends View {
-    static final int WIFI = 0, GEAR = 1, COMPASS = 2, BELL = 3, BACK = 4, STAR = 5, MIHRAB = 6, RADIO = 7, PLAY = 8, STOP = 9, MOON = 10;
+    static final int WIFI = 0, GEAR = 1, COMPASS = 2, BELL = 3, BACK = 4, STAR = 5, MIHRAB = 6, RADIO = 7, PLAY = 8, STOP = 9, MOON = 10, INPUT = 11;
 
     private int kind;
     private final float strokeOn24;
@@ -67,6 +67,15 @@ final class Icon extends View {
             path.close();
             c.drawPath(path, p);
             c.drawLine(10 * k, 21 * k, 14 * k, 21 * k, p);
+        } else if (kind == INPUT) {
+            // A screen with an arrow going in, on a stand: M3 4h18v12H3z · M7.5 10h8 · M12.5 7l3 3-3 3 · M12 16v4 · M8 20h8
+            r.set(3 * k, 4 * k, 21 * k, 16 * k);
+            c.drawRoundRect(r, 2 * k, 2 * k, p);
+            c.drawLine(7.5f * k, 10 * k, 15.5f * k, 10 * k, p);
+            c.drawLine(12.5f * k, 7 * k, 15.5f * k, 10 * k, p);
+            c.drawLine(15.5f * k, 10 * k, 12.5f * k, 13 * k, p);
+            c.drawLine(12 * k, 16 * k, 12 * k, 20 * k, p);
+            c.drawLine(8 * k, 20 * k, 16 * k, 20 * k, p);
         } else if (kind == STAR) {
             // M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z, filled.
             float[] pts = {12, 3, 14.6f, 8.6f, 20.6f, 9.3f, 16.1f, 13.4f, 17.3f, 19.4f, 12, 16.4f, 6.7f, 19.4f, 7.9f, 13.4f, 3.4f, 9.3f, 9.4f, 8.6f};

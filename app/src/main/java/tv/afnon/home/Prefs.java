@@ -64,6 +64,8 @@ final class Prefs {
         new City("asyut", "أسيوط", "Asyut", "مصر", "Egypt", 27.1783, 31.1859, EG),
         new City("luxor", "الأقصر", "Luxor", "مصر", "Egypt", 25.6872, 32.6396, EG),
         new City("aswan", "أسوان", "Aswan", "مصر", "Egypt", 24.0889, 32.8998, EG),
+        // Libya: the Ministry of Awqaf's official table (assets/times/ubari.txt) is used; the method is only the fallback.
+        new City("ubari", "أوباري", "Ubari", "ليبيا", "Libya", 26.5900, 12.7800, MWL),
         new City("makkah", "مكة المكرمة", "Makkah", "السعودية", "Saudi Arabia", 21.3891, 39.8579, CalculationMethod.UMM_AL_QURA),
         new City("madinah", "المدينة المنورة", "Madinah", "السعودية", "Saudi Arabia", 24.5247, 39.5692, CalculationMethod.UMM_AL_QURA),
         new City("riyadh", "الرياض", "Riyadh", "السعودية", "Saudi Arabia", 24.7136, 46.6753, CalculationMethod.UMM_AL_QURA),
@@ -239,7 +241,7 @@ final class Prefs {
      * {@link Text#regions()}. Every country in CITIES must be in exactly one region, or its cities can't be picked.
      */
     static final String[][] REGIONS = {
-        {"Egypt", "Saudi Arabia", "UAE", "Kuwait", "Qatar", "Jordan", "Palestine", "Lebanon", "Syria", "Iraq", "Bahrain",
+        {"Egypt", "Libya", "Saudi Arabia", "UAE", "Kuwait", "Qatar", "Jordan", "Palestine", "Lebanon", "Syria", "Iraq", "Bahrain",
             "Oman", "Yemen"},
         {"India", "Pakistan", "Bangladesh", "Sri Lanka", "Maldives", "Indonesia", "Malaysia", "Singapore", "Brunei",
             "Thailand", "Japan", "South Korea", "Turkey"},

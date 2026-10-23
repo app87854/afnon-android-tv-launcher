@@ -3,8 +3,10 @@ package tv.afnon.home;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.DashPathEffect;
+import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.graphics.Shader;
 import android.widget.FrameLayout;
 
 /**
@@ -33,6 +35,10 @@ class FocusTile extends FrameLayout {
     private float restBorderWidth;
     private Look look;
     private float focusScale = Tokens.FOCUS_SCALE;
+    /** Glass at rest: a fill that fades down, a sheen over the top and a lit edge; plain gradients, no blur. */
+    private boolean glass;
+    private final Paint sheen = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private Shader glassFill;
 
     FocusTile(Context c, float radiusDesignPx) {
         super(c);
@@ -55,6 +61,13 @@ class FocusTile extends FrameLayout {
         restFill = fillColor;
         restBorder = borderColor;
         restBorderWidth = Ui.px(borderWidthDesignPx);
+        invalidate();
+        return this;
+    }
+
+    /** Draws the resting fill as glass (tokens glass-*) instead of flat; the focused look is unchanged. */
+    FocusTile setGlass() {
+        glass = true;
         invalidate();
         return this;
     }
@@ -87,12 +100,30 @@ class FocusTile extends FrameLayout {
     }
 
     @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        float reach = Ui.px(REACH);
+        float top = reach, height = Math.max(1f, h - 2 * reach);
+        if (glass) {
+            glassFill = new LinearGradient(0, top, 0, top + height, Tokens.GLASS_TOP, Tokens.GLASS_BOTTOM, Shader.TileMode.CLAMP);
+            sheen.setShader(new LinearGradient(0, top, 0, top + height * 0.45f, Tokens.GLASS_SHEEN, 0x00EFE7D6, Shader.TileMode.CLAMP));
+        }
+    }
+
+    @Override
     protected void onDraw(Canvas c) {
         float reach = Ui.px(REACH);
         box.set(reach, reach, getWidth() - reach, getHeight() - reach);
         boolean focused = isFocused();
         int f = focused ? Tokens.GOLD_400 : restFill;
-        if (f != 0) {
+        boolean glassNow = glass && !focused && f != 0 && glassFill != null;
+        if (glassNow) {
+            fill.setColor(0xFFFFFFFF);
+            fill.setShader(glassFill);
+            c.drawRoundRect(box, radius, radius, fill);
+            fill.setShader(null);
+            c.drawRoundRect(box, radius, radius, sheen);
+        } else if (f != 0) {
             fill.setColor(f);
             c.drawRoundRect(box, radius, radius, fill);
         }
