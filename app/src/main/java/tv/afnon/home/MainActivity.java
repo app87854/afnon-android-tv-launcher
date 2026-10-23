@@ -55,6 +55,8 @@ public class MainActivity extends Screen {
     private static final int LABEL_ABOVE_FAV = 468, LABEL_ABOVE_MORE = 712;
 
     private static final int ARCH = 0, WIFI = 1, SETTINGS = 2, F0 = 3, M0 = 7, ALL = 12, RADIO = 13, INPUT = 14, NODES = 15;
+    private static final String[] INPUT_NAMES = {"HDMI 1", "HDMI 2", "AV 1"};
+    private static final int[] INPUT_IDS = {9, 10, 15};
 
     private final View[] nodes = new View[NODES];
     private final TextView[] cellTag = new TextView[6], cellName = new TextView[6], cellTime = new TextView[6];
@@ -78,6 +80,8 @@ public class MainActivity extends Screen {
     private RadioBars pillBars, cardBars;
     private TextView radioLabel, cardStatus, playLabel;
     private LinearLayout radioCard;
+    private LinearLayout inputCard;
+    private final FocusTile[] inputChoices = new FocusTile[INPUT_NAMES.length];
     private FocusTile cardPlay, cardDark;
     private final Radio.Listener onRadio = state -> styleRadio();
     /** Test only (shiftTo): how far Home's clock is moved. */
@@ -361,9 +365,101 @@ public class MainActivity extends Screen {
         b.addView(icon, new FrameLayout.LayoutParams(Ui.ipx(34), Ui.ipx(34), Gravity.CENTER));
         b.setContentDescription(t.inputs());
         b.setLook(f -> icon.setColor(f ? Tokens.LAPIS_900 : Tokens.PLASTER_100));
-        b.setOnClickListener(v -> startSafely(new Intent(screen).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)));
+        b.setOnClickListener(v -> showInputsDropdown(screen));
         nodeLabel[INPUT] = t.inputs();
         return b;
+    }
+
+    /** Afnon's compact source picker. On the known CultraView board it bypasses the system source screen. */
+    private void showInputsDropdown(Intent fallback) {
+        if (inputCard != null || card != null || radioCard != null) return;
+        inputCard = new LinearLayout(this);
+        inputCard.setOrientation(LinearLayout.VERTICAL);
+        inputCard.setPadding(Ui.ipx(32), Ui.ipx(26), Ui.ipx(32), Ui.ipx(26));
+        GradientDrawable bg = new GradientDrawable();
+        bg.setColor(Tokens.LAPIS_700);
+        bg.setCornerRadius(Ui.px(24));
+        bg.setStroke(Ui.ipx(2), Tokens.GOLD_400_60);
+        inputCard.setBackground(bg);
+        inputCard.setClipChildren(false);
+        inputCard.setClipToPadding(false);
+
+        TextView title = text(displayBold, 40, Tokens.PLASTER_100);
+        title.setText(t.inputs());
+        title.setTextDirection(View.TEXT_DIRECTION_LTR);
+        title.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
+        inputCard.addView(title);
+
+        LinearLayout choices = new LinearLayout(this);
+        choices.setOrientation(LinearLayout.HORIZONTAL);
+        choices.setGravity(Gravity.CENTER_VERTICAL);
+        choices.setClipChildren(false);
+        float r = FocusTile.REACH;
+        for (int i = 0; i < INPUT_NAMES.length; i++) {
+            final int at = i;
+            inputChoices[i] = inputChoice(INPUT_NAMES[i]);
+            inputChoices[i].setOnClickListener(v -> {
+                Intent direct = FirmwareKeys.cultraViewSource(this, INPUT_IDS[at]);
+                if (direct != null) {
+                    closeInputsDropdown();
+                    startSafely(direct.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                } else if (fallback != null) {
+                    closeInputsDropdown();
+                    startSafely(new Intent(fallback).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                } else {
+                    Toast.makeText(this, t.inputError(), Toast.LENGTH_SHORT).show();
+                }
+            });
+            inputChoices[i].setOnFocusChangeListener((v, focused) -> {
+                if (focused) {
+                    List<String> h = new ArrayList<>();
+                    h.add(t.hintOk(INPUT_NAMES[at]));
+                    h.add(t.hintClose());
+                    setHints(hints, h);
+                }
+            });
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, Ui.ipx(70 + 2 * r), 1f);
+            if (i > 0) lp.setMarginStart(Ui.ipx(14 - 2 * r));
+            choices.addView(inputChoices[i], lp);
+        }
+        LinearLayout.LayoutParams clp = new LinearLayout.LayoutParams(-1, -2);
+        clp.topMargin = Ui.ipx(22 - r);
+        clp.setMarginStart(-Ui.ipx(r));
+        inputCard.addView(choices, clp);
+
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(Ui.ipx(760), -2, Gravity.TOP | Gravity.END);
+        lp.setMarginEnd(Ui.ipx(1920 - (Tokens.COURT_X + Tokens.COURT_W)));
+        lp.topMargin = Ui.ipx(56 + 72 + 24);
+        root.addView(inputCard, lp);
+        for (View n : nodes) if (n != null) n.setFocusable(false);
+        inputChoices[0].requestFocus();
+        List<String> h = new ArrayList<>();
+        h.add(t.hintOk(INPUT_NAMES[0]));
+        h.add(t.hintClose());
+        setHints(hints, h);
+    }
+
+    private FocusTile inputChoice(String name) {
+        FocusTile b = new FocusTile(this, 34);
+        b.setRest(Tokens.LAPIS_900, Tokens.LINE_SOFT, 2);
+        TextView v = text(ui400, 24, Tokens.PLASTER_100);
+        v.setText(name);
+        v.setTextDirection(View.TEXT_DIRECTION_LTR);
+        v.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        v.setGravity(Gravity.CENTER);
+        b.addView(v, new FrameLayout.LayoutParams(-1, -1));
+        b.setLook(f -> v.setTextColor(f ? Tokens.LAPIS_900 : Tokens.PLASTER_100));
+        b.setContentDescription(name);
+        return b;
+    }
+
+    private void closeInputsDropdown() {
+        if (inputCard == null) return;
+        root.removeView(inputCard);
+        inputCard = null;
+        for (int i = 0; i < inputChoices.length; i++) inputChoices[i] = null;
+        for (View n : nodes) if (n != null) n.setFocusable(true);
+        nodes[INPUT].requestFocus();
     }
 
     private View favouriteTile(String pkg, int node, float x, float y, float w) {
@@ -817,6 +913,23 @@ public class MainActivity extends Screen {
                 return true;
             }
         }
+        if (inputCard != null) {
+            if (k == KeyEvent.KEYCODE_BACK) {
+                if (e.getAction() == KeyEvent.ACTION_UP) closeInputsDropdown();
+                return true;
+            }
+            if (k == KeyEvent.KEYCODE_DPAD_LEFT || k == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                boolean towardEnd = (k == KeyEvent.KEYCODE_DPAD_RIGHT) != rtl;
+                if (e.getAction() == KeyEvent.ACTION_DOWN) {
+                    int at = inputChoiceIndex();
+                    int next = towardEnd ? Math.min(INPUT_NAMES.length - 1, at + 1) : Math.max(0, at - 1);
+                    inputChoices[next].requestFocus();
+                }
+                return true;
+            }
+            if (k == KeyEvent.KEYCODE_DPAD_UP || k == KeyEvent.KEYCODE_DPAD_DOWN) return true;
+            return super.dispatchKeyEvent(e);
+        }
         if (radioCard != null) {
             if (k == KeyEvent.KEYCODE_BACK) {
                 if (e.getAction() == KeyEvent.ACTION_UP) closeRadioCard(true);
@@ -855,6 +968,11 @@ public class MainActivity extends Screen {
             return true;
         }
         return super.dispatchKeyEvent(e);
+    }
+    private int inputChoiceIndex() {
+        View f = getCurrentFocus();
+        for (int i = 0; i < inputChoices.length; i++) if (inputChoices[i] == f) return i;
+        return 0;
     }
 
     /** design/FocusMap.dc.html, written for LTR; in Arabic every Left/Right swaps. */

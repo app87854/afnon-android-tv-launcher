@@ -36,6 +36,7 @@ final class Text {
     String today() { return ar ? "مواقيت اليوم والقبلة" : "Today & Qibla"; }
     String settings() { return ar ? "الإعدادات" : "Settings"; }
     String inputs() { return ar ? "المدخلات" : "Inputs"; }
+    String inputError() { return ar ? "تعذر تبديل المدخل" : "Could not switch input"; }
     /** The saved city in this language; set by {@link Screen#loadText}. */
     String cityName = "";
     String city() { return cityName; }
