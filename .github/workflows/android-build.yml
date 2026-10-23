@@ -5,6 +5,12 @@ on:
     branches: [main, 'manus/**']
   pull_request:
   workflow_dispatch:
+    inputs:
+      include_audio:
+        description: 'Include adhan and announcement audio in the APK'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -32,13 +38,53 @@ jobs:
           set -o pipefail
           "$SDKMANAGER" --install "platforms;android-34" "build-tools;34.0.0" "platform-tools"
 
-      - name: Build debug APK
+      - name: Prepare signing key
+        if: github.event_name != 'pull_request'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.AFNON_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.AFNON_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.AFNON_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.AFNON_KEY_PASSWORD }}
+        run: |
+          test -n "$KEYSTORE_BASE64"
+          test -n "$KEYSTORE_PASSWORD"
+          test -n "$KEY_ALIAS"
+          test -n "$KEY_PASSWORD"
+          printf '%s' "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/afnon-release.jks"
+          cat > keystore.properties <<EOF
+          storeFile=$RUNNER_TEMP/afnon-release.jks
+          storePassword=$KEYSTORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEY_PASSWORD
+          EOF
+
+      - name: Restore audio assets for the APK
+        if: ${{ inputs.include_audio }}
+        run: |
+          python3 -m pip install --user edge-tts
+          bash tools/fetch-adhans.sh
+          bash tools/fetch-announce.sh
+
+      - name: Build debug APK for pull requests
+        if: github.event_name == 'pull_request'
         run: ./gradlew --no-daemon :app:assembleDebug
+
+      - name: Build signed release APK
+        if: github.event_name != 'pull_request'
+        run: ./gradlew --no-daemon :app:assembleRelease
+
+      - name: Verify APK signature
+        if: github.event_name != 'pull_request'
+        run: |
+          SDK_ROOT="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          APK="$(find app/build/outputs/apk/release -type f -name '*.apk' | head -n 1)"
+          test -n "$APK"
+          "$SDK_ROOT/build-tools/34.0.0/apksigner" verify --print-certs "$APK"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: afnon-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
+          name: afnon-apk
+          path: app/build/outputs/apk/**/*.apk
           if-no-files-found: error
           retention-days: 14

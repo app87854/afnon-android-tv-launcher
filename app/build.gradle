@@ -1,6 +1,15 @@
+import java.util.Properties
+
 plugins {
     id 'com.android.application'
 }
+
+def keystorePropertiesFile = rootProject.file('keystore.properties')
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+def hasSigningKey = keystorePropertiesFile.exists()
 
 android {
     namespace 'tv.afnon.home'
@@ -17,6 +26,30 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
+    }
+
+    signingConfigs {
+        if (hasSigningKey) {
+            release {
+                storeFile rootProject.file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            if (hasSigningKey) {
+                signingConfig signingConfigs.release
+            }
+        }
+        release {
+            if (hasSigningKey) {
+                signingConfig signingConfigs.release
+            }
+        }
     }
 }
 
