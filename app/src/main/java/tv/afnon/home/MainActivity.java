@@ -100,12 +100,6 @@ public class MainActivity extends Screen {
         runTest(intent);
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (!builtApps.isEmpty() && !builtApps.equals(appsKey())) build();
-    }
-
     /**
      * Checking reminders on the TV without waiting for a prayer: `--es test reminder` shows Home's card now, with
      * the spoken reminder if it is on; `banner`, `call` and `announce` come from the remote buttons service 8 s
