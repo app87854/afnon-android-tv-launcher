@@ -32,6 +32,12 @@ jobs:
           set -o pipefail
           "$SDKMANAGER" --install "platforms;android-34" "build-tools;34.0.0" "platform-tools"
 
+      - name: Restore audio assets for the APK
+        run: |
+          python3 -m pip install --user edge-tts
+          bash tools/fetch-adhans.sh
+          bash tools/fetch-announce.sh
+
       - name: Build debug APK
         run: ./gradlew --no-daemon :app:assembleDebug
 
